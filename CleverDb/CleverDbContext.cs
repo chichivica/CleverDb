@@ -18,6 +18,12 @@ namespace CleverDb
         {
             ConnectionString = connectionString;
         }
+        public CleverObject Insert(dynamic obj)
+        {
+            CleverObject result = CleverObjectService.GetCleverObjectFromDynamic(obj);
+            return Insert(result);
+        }
+
         public CleverObject Insert(CleverObject co)
         {
             string queryString = @"

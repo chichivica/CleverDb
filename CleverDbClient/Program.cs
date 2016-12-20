@@ -23,11 +23,11 @@ namespace CleverDbClient
             var obj = new {
                 name = "Насос",
                 parentId = 95,
-                attributes = new[] { new {
+                attributes =  new {
                     марка = "Bosh",
                     мощность = 95.3,
                     ДатаУстановки = DateTime.Now
-                }}
+                }
             };
             string stringified = Json.Encode(obj);
             var clever = CleverObjectService.GetCleverObjectFromJson(stringified);

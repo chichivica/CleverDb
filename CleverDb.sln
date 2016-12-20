@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleverDb", "CleverDb\Clever
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleverDbClient", "CleverDbClient\CleverDbClient.csproj", "{D669FB57-68DC-4208-B881-E794BE3AFA14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleverApi", "CleverApi\CleverApi.csproj", "{E4E4334A-E151-4330-A7F6-36E1031D9BD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleverApi.Tests", "CleverApi.Tests\CleverApi.Tests.csproj", "{6D0DD10F-0B24-4A6C-A92C-CFE98BAE833E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{D669FB57-68DC-4208-B881-E794BE3AFA14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D669FB57-68DC-4208-B881-E794BE3AFA14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D669FB57-68DC-4208-B881-E794BE3AFA14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4E4334A-E151-4330-A7F6-36E1031D9BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4E4334A-E151-4330-A7F6-36E1031D9BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4E4334A-E151-4330-A7F6-36E1031D9BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4E4334A-E151-4330-A7F6-36E1031D9BD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D0DD10F-0B24-4A6C-A92C-CFE98BAE833E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D0DD10F-0B24-4A6C-A92C-CFE98BAE833E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D0DD10F-0B24-4A6C-A92C-CFE98BAE833E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D0DD10F-0B24-4A6C-A92C-CFE98BAE833E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
