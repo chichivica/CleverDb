@@ -1,4 +1,5 @@
 ﻿using CleverDb;
+using CleverDb.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -21,8 +22,7 @@ namespace CleverApi.Controllers
             }
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            var q = db.Insert(json);
-            return Json(q);
+            return Json(db.Insert(json));
         }
 
         [HttpGet]
@@ -31,6 +31,41 @@ namespace CleverApi.Controllers
         {
             int q = 2;
 
+        }
+
+        [HttpGet]
+        [Route("api/cleverdb/get/{id}")]
+        public object Get(int id)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
+            CleverDbContext db = new CleverDbContext(connectionString);
+            return Json(db.FindById(id));
+        }
+
+        [HttpGet]
+        [Route("api/cleverdb/subtree/{id}")]
+        public object GetSubtree(int id)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
+            CleverDbContext db = new CleverDbContext(connectionString);
+            var q = db.GetSubTreeForTheNode(id);
+            return Json(q);
+        }
+
+        [HttpPost]
+        [Route("api/cleverdb/find")]
+        public object FindObject(dynamic json)
+        {
+            if (json == null)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "provide correct json object"));
+            }
+            string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
+            CleverDbContext db = new CleverDbContext(connectionString);
+
+            CleverQuery cq = new CleverQuery(json);
+            db.Find(cq);
+            return Json(json);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace CleverApi.Tests
     public class TestCleverDbController
     {
         [TestMethod]
-        public void Insert_ShouldReturnIdOfObject()
+        public void Insert_ShouldReturnCleverObject()
         {
             var controller = new CleverDbController();
             var json = @"{

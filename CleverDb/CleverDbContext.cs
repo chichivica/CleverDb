@@ -18,6 +18,7 @@ namespace CleverDb
         {
             ConnectionString = connectionString;
         }
+
         public CleverObject Insert(dynamic obj)
         {
             CleverObject result = CleverObjectService.GetCleverObjectFromDynamic(obj);
@@ -78,6 +79,7 @@ namespace CleverDb
 
             return co;
         }
+
         public CleverObject FindById(int id)
         {
             CleverObject result = null;
@@ -117,7 +119,7 @@ namespace CleverDb
             return PopulateAttributes(result);
         }
 
-        public string GetSubTreeForTheNode(int id)
+        public dynamic GetSubTreeForTheNode(int id)
         {
             string queryString = "exec [dbo].[getSubTreeForTheNode] @objectId";
             dynamic result = new ExpandoObject();
@@ -157,7 +159,7 @@ namespace CleverDb
                     connection.Close();
                 }
             }
-            return CleverObjectService.CreateJsonFromDynamicObj(result);
+            return result;
         }
 
         void BuildTheTreeRecurs (dynamic obj, List<dynamic> source)
@@ -218,7 +220,6 @@ namespace CleverDb
             return co;
         }
 
-
         void InsertAttributes(CleverObject co)
         {
             string queryString = "Declare @DataTable as CleverAttributeType";
@@ -251,6 +252,71 @@ namespace CleverDb
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
             }
+        }
+
+        public IEnumerable<CleverDbContext> Find(CleverQuery cq)
+        {
+            string queryObjects = "select * from  [CleverObjects]";
+            if (cq.ClassConditions.ToList().Count > 0)
+            {
+                queryObjects += " where ";
+                int counter = 1;
+                foreach (var query in cq.ClassConditions)
+                {
+                    queryObjects += query.FieldName + " ";
+                    queryObjects += query.SqlOperator + " ";
+                    if (query.Value.GetType() == typeof(int) 
+                        || query.Value.GetType() == typeof(decimal) 
+                        || query.Value.GetType() == typeof(float))
+                    {
+                        queryObjects += query.Value + " ";
+                    } else
+                    {
+                        queryObjects += "'" + query.Value + "' ";
+
+                    }
+                    if (counter < cq.ClassConditions.Count())
+                    {
+                        queryObjects += " and ";
+                    }
+                }
+            }
+            List<CleverObject> result = new List<CleverObject>();
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(queryObjects, connection);
+                SqlDataAdapter dataAdapter = new SqlDataAdapter();
+                dataAdapter.SelectCommand = command;
+                DataSet ds = new DataSet();
+
+                try
+                {
+                    connection.Open();
+                    dataAdapter.Fill(ds);
+                    if (ds.Tables[0].Rows.Count != 0)
+                    {
+                        result = ds.Tables[0].AsEnumerable().Select(dataRow =>
+                        new CleverObject()
+                        {
+                            Id = dataRow.Field<int>("Id"),
+                            Name = dataRow.Field<string>("Name"),
+                            ParentId = dataRow.Field<int?>("ParentId")
+                        }).ToList();
+                    }
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            //string queryAttributes = "select * from [CleverObjectAttributes]"
+            //if (result.Count > 0)
+            //{
+
+            //}
+
+            return null;
         }
     }
 }
