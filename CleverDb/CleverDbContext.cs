@@ -254,6 +254,12 @@ namespace CleverDb
             }
         }
 
+        public IEnumerable<CleverObject> FindById(IEnumerable<int> ids)
+        {
+            //TODO: implement method to search with a list of ids in the joined table
+            return null;
+        }
+
         public IEnumerable<CleverObject> Find(CleverQuery cq)
         {
             string queryString =
@@ -318,13 +324,8 @@ namespace CleverDb
                 }
             }
 
-            //string queryAttributes = "select * from [CleverObjectAttributes]"
-            //if (result.Count > 0)
-            //{
-
-            //}
-
             List<CleverObject> cleverObjects = new List<CleverObject>();
+            ///really bad strategy
             cleverObjects = appropriateObjects.Select(id => FindById(id)).ToList<CleverObject>();
 
             return cleverObjects;

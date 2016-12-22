@@ -64,8 +64,15 @@ namespace CleverApi.Controllers
 
             CleverDbContext db = new CleverDbContext(connectionString);
             CleverQuery cq = new CleverQuery(json);
-
-            return Json(db.Find(cq));
+            try
+            {
+                var result = db.Find(cq);
+                return Json(result);
+            }
+            catch (Exception exp)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, exp.ToString()));
+            }
         }
     }
 }
