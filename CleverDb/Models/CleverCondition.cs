@@ -32,6 +32,30 @@ namespace CleverDb.Models
                 return Type.GetDescription<ConditionTypes>();
             }
         }
+        public virtual string GetSqlCondition(string tableName)
+        {
+            DateTime dtResult = new DateTime();
+            bool parseResult = DateTime.TryParse(Value.ToString(), out dtResult);
+
+            string result = $" {tableName}.Name = '{FieldName}' and ";
+            if (Value.GetType() == typeof(int)
+                    || Value.GetType() == typeof(decimal)
+                    || Value.GetType() == typeof(float))
+            {
+                result += $" {tableName}.DoubleValue {SqlOperator} {Value} ";
+            }
+            else
+            if (parseResult)
+            {
+                result += $" {tableName}.DateTimeValue {SqlOperator} '{Value}' ";
+            }
+            else
+            {
+                result += $" {tableName}.StringValue {SqlOperator} '{Value}' ";
+            }
+
+            return result;
+        }
         public CleverCondition(string name, string type, dynamic value)
         {
             switch (type)

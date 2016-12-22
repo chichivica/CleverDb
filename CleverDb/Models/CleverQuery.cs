@@ -10,7 +10,7 @@ namespace CleverDb.Models
 {
     public class CleverQuery
     {
-        public IEnumerable<CleverCondition> ClassConditions { get; set; } = new List<CleverCondition>();
+        public IEnumerable<CleverCondition> ObjectConditions { get; set; } = new List<CObjectCondition>();
         public IEnumerable<CleverCondition> AttributesConditions { get; set; } = new List<CleverCondition>();
 
 
@@ -29,15 +29,15 @@ namespace CleverDb.Models
                 string operationType = new List<string>(query[entityType][fieldName].Keys).First();
                 dynamic value = query[entityType][fieldName][operationType];
 
-                CleverCondition cd = new CleverCondition(fieldName, operationType, value);
-
                 if (entityType == "class")
                 {
-                    ((List<CleverCondition>) ClassConditions).Add(cd);
+                    ((List<CObjectCondition>) ObjectConditions)
+                        .Add(new CObjectCondition(fieldName, operationType, value));
                     
                 } else if (entityType == "attribute")
                 {
-                    ((List<CleverCondition>)AttributesConditions).Add(cd);
+                    ((List<CleverCondition>)AttributesConditions)
+                        .Add(new CleverCondition(fieldName, operationType, value));
                 }
                 else
                 {

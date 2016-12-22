@@ -81,6 +81,7 @@
     <Compile Include="Models\CleverObject.cs" />
     <Compile Include="Models\CleverObjectAttribute.cs" />
     <Compile Include="Models\CleverQuery.cs" />
+    <Compile Include="Models\CObjectCondition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

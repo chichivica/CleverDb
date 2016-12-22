@@ -72,7 +72,7 @@ namespace CleverDb
                 {
                     connection.Close();
                 }
-                
+
             }
 
 
@@ -162,7 +162,7 @@ namespace CleverDb
             return result;
         }
 
-        void BuildTheTreeRecurs (dynamic obj, List<dynamic> source)
+        void BuildTheTreeRecurs(dynamic obj, List<dynamic> source)
         {
             obj.Children.AddRange(source.FindAll(f => f.ParentId == obj.Id));
             if (obj.Children.Count == 0)
@@ -254,37 +254,49 @@ namespace CleverDb
             }
         }
 
-        public IEnumerable<CleverDbContext> Find(CleverQuery cq)
+        public IEnumerable<CleverObject> Find(CleverQuery cq)
         {
-            string queryObjects = "select * from  [CleverObjects]";
-            if (cq.ClassConditions.ToList().Count > 0)
-            {
-                queryObjects += " where ";
-                int counter = 1;
-                foreach (var query in cq.ClassConditions)
-                {
-                    queryObjects += query.FieldName + " ";
-                    queryObjects += query.SqlOperator + " ";
-                    if (query.Value.GetType() == typeof(int) 
-                        || query.Value.GetType() == typeof(decimal) 
-                        || query.Value.GetType() == typeof(float))
-                    {
-                        queryObjects += query.Value + " ";
-                    } else
-                    {
-                        queryObjects += "'" + query.Value + "' ";
+            string queryString =
+                @"  select distinct (obj.Id) from [CleverObjects] obj " +
+                "left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId";
 
-                    }
-                    if (counter < cq.ClassConditions.Count())
-                    {
-                        queryObjects += " and ";
-                    }
+            if (cq.ObjectConditions.ToList().Count > 0)
+            {
+                queryString += " where ";
+                int counter = 1;
+                foreach (var query in cq.ObjectConditions)
+                {
+                    queryString += query.GetSqlCondition("obj");
+                    if (counter < cq.ObjectConditions.Count())
+                        queryString += " and ";
+                    counter++;
                 }
             }
+            if (cq.AttributesConditions.ToList().Count > 0)
+            {
+                if (cq.ObjectConditions.ToList().Count == 0)
+                {
+                    queryString += " where ";
+                }
+                else
+                {
+                    queryString += " and ";
+                }
+                int count = 1;
+                foreach (var query in cq.AttributesConditions)
+                {
+                    queryString += query.GetSqlCondition("atr");
+                    if (count < cq.AttributesConditions.Count())
+                        queryString += " and ";
+                    count++;
+                }
+            }
+
+            List<int> appropriateObjects = new List<int>();
             List<CleverObject> result = new List<CleverObject>();
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
-                SqlCommand command = new SqlCommand(queryObjects, connection);
+                SqlCommand command = new SqlCommand(queryString, connection);
                 SqlDataAdapter dataAdapter = new SqlDataAdapter();
                 dataAdapter.SelectCommand = command;
                 DataSet ds = new DataSet();
@@ -295,13 +307,9 @@ namespace CleverDb
                     dataAdapter.Fill(ds);
                     if (ds.Tables[0].Rows.Count != 0)
                     {
-                        result = ds.Tables[0].AsEnumerable().Select(dataRow =>
-                        new CleverObject()
-                        {
-                            Id = dataRow.Field<int>("Id"),
-                            Name = dataRow.Field<string>("Name"),
-                            ParentId = dataRow.Field<int?>("ParentId")
-                        }).ToList();
+                        appropriateObjects = ds.Tables[0].AsEnumerable().Select(dataRow =>
+                            dataRow.Field<int>("Id")
+                        ).ToList();
                     }
                 }
                 finally
@@ -316,7 +324,10 @@ namespace CleverDb
 
             //}
 
-            return null;
+            List<CleverObject> cleverObjects = new List<CleverObject>();
+            cleverObjects = appropriateObjects.Select(id => FindById(id)).ToList<CleverObject>();
+
+            return cleverObjects;
         }
     }
 }

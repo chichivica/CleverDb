@@ -61,11 +61,11 @@ namespace CleverApi.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "provide correct json object"));
             }
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
-            CleverDbContext db = new CleverDbContext(connectionString);
 
+            CleverDbContext db = new CleverDbContext(connectionString);
             CleverQuery cq = new CleverQuery(json);
-            db.Find(cq);
-            return Json(json);
+
+            return Json(db.Find(cq));
         }
     }
 }
