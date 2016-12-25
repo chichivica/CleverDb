@@ -262,9 +262,14 @@ namespace CleverDb
 
         public IEnumerable<CleverObject> Find(CleverQuery cq)
         {
-            string queryString =
-                @"  select distinct (obj.Id) from [CleverObjects] obj " +
-                "left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId";
+            if (cq.IsEmpty) return null;
+
+            string queryString = "select ob.Id as 'Id', ob.Name, ob.ParentId, at.Id as 'AttributeId', at.Name as 'AttributeName'," +
+                " at.StringValue, at.DateTimeValue, at.DoubleValue, at.Type, at.CleverObjectId from [CleverObjects] ob " +
+                " left join [CleverObjectAttributes] at on ob.Id = at.CleverObjectId " +
+                " where ob.Id in ( " +
+                " select distinct (obj.Id) from [CleverObjects] obj " +
+                " left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId "; 
 
             if (cq.ObjectConditions.ToList().Count > 0)
             {
@@ -297,9 +302,11 @@ namespace CleverDb
                     count++;
                 }
             }
+            queryString += ") order by ob.Id";
 
             List<int> appropriateObjects = new List<int>();
-            List<CleverObject> result = new List<CleverObject>();
+            Stack<CleverObject> stack = new Stack<CleverObject>();
+
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 SqlCommand command = new SqlCommand(queryString, connection);
@@ -313,9 +320,44 @@ namespace CleverDb
                     dataAdapter.Fill(ds);
                     if (ds.Tables[0].Rows.Count != 0)
                     {
-                        appropriateObjects = ds.Tables[0].AsEnumerable().Select(dataRow =>
-                            dataRow.Field<int>("Id")
-                        ).ToList();
+
+                        foreach(var dataRow in ds.Tables[0].AsEnumerable())
+                        {
+                            int objectId = dataRow.Field<int>("Id");
+                            string objectName = dataRow.Field<string>("Name");
+                            int? objectPartentId = dataRow.Field<int?>("ParentId");
+                            var attribute = new CleverObjectAttribute(dataRow.Field<string>("Type"))
+                            {
+                                Id = dataRow.Field<int>("AttributeId"),
+                                Name = dataRow.Field<string>("AttributeName"),
+                                StringValue = dataRow.Field<string>("StringValue"),
+                                DoubleValue = dataRow.Field<double?>("DoubleValue"),
+                                DateTimeValue = dataRow.Field<DateTime?>("DateTimeValue"),
+                                CleverObjectId = dataRow.Field<int>("CleverObjectId")
+                            };
+
+                            if (stack.Count == 0)
+                            {
+                                stack.Push(new CleverObject()
+                                {
+                                    Id = objectId,
+                                    ParentId = objectPartentId,
+                                    Name = objectName
+                                });
+                            }
+                            var stackedObject = stack.Peek();
+                            if (stackedObject.Id != objectId)
+                            {
+                                stack.Push(new CleverObject()
+                                {
+                                    Id = objectId,
+                                    ParentId = objectPartentId,
+                                    Name = objectName
+                                });
+                                stackedObject = stack.Peek();
+                            }
+                            stackedObject.Attributes.Add(attribute);
+                        }
                     }
                 }
                 finally
@@ -324,11 +366,7 @@ namespace CleverDb
                 }
             }
 
-            List<CleverObject> cleverObjects = new List<CleverObject>();
-            ///really bad strategy
-            cleverObjects = appropriateObjects.Select(id => FindById(id)).ToList<CleverObject>();
-
-            return cleverObjects;
+            return stack.AsEnumerable();
         }
     }
 }

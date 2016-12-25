@@ -13,6 +13,14 @@ namespace CleverDb.Models
         public IEnumerable<CleverCondition> ObjectConditions { get; set; } = new List<CObjectCondition>();
         public IEnumerable<CleverCondition> AttributesConditions { get; set; } = new List<CleverCondition>();
 
+        public bool IsEmpty
+        {
+            get
+            {
+                return ObjectConditions.Count() == 0 && AttributesConditions.Count() == 0;
+            }
+        }
+
 
 
         public CleverQuery(dynamic json)
@@ -25,16 +33,17 @@ namespace CleverDb.Models
             foreach (var query in obj)
             {
                 string entityType = new List<string>(query.Keys).First<string>();
-                string fieldName =  new List<string>(query[entityType].Keys).First();
+                string fieldName = new List<string>(query[entityType].Keys).First();
                 string operationType = new List<string>(query[entityType][fieldName].Keys).First();
                 dynamic value = query[entityType][fieldName][operationType];
 
                 if (entityType == "class")
                 {
-                    ((List<CObjectCondition>) ObjectConditions)
+                    ((List<CObjectCondition>)ObjectConditions)
                         .Add(new CObjectCondition(fieldName, operationType, value));
-                    
-                } else if (entityType == "attribute")
+
+                }
+                else if (entityType == "attribute")
                 {
                     ((List<CleverCondition>)AttributesConditions)
                         .Add(new CleverCondition(fieldName, operationType, value));
