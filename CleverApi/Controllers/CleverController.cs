@@ -1,4 +1,5 @@
 ﻿using CleverDb;
+using CleverDb.Infrastructure;
 using CleverDb.Models;
 using System;
 using System.Collections.Generic;
@@ -22,15 +23,8 @@ namespace CleverApi.Controllers
             }
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            return Json(db.Insert(json));
-        }
-
-        [HttpGet]
-        [Route("customers/{customerId}/orders")]
-        public void SomAction(int customerId)
-        {
-            int q = 2;
-
+            var inserted = db.Insert(json);
+            return Json(CleverObjectService.GetDynamicFromCleverObject(inserted));
         }
 
         [HttpGet]
@@ -39,7 +33,8 @@ namespace CleverApi.Controllers
         {
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            return Json(db.FindById(id));
+            var result = db.FindById(id);
+            return Json(CleverObjectService.GetDynamicFromCleverObject(result));
         }
 
         [HttpGet]
@@ -48,8 +43,7 @@ namespace CleverApi.Controllers
         {
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            var q = db.GetSubTreeForTheNode(id);
-            return Json(q);
+            return Json(db.GetSubTreeForTheNode(id));
         }
 
         [HttpPost]
@@ -67,7 +61,7 @@ namespace CleverApi.Controllers
             try
             {
                 var result = db.Find(cq);
-                return Json(result);
+                return Json(CleverObjectService.GetDynamicFromCleverObject(result));
             }
             catch (Exception exp)
             {

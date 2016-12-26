@@ -7,8 +7,6 @@ using System.Data.SqlClient;
 using System.Dynamic;
 using System.Linq;
 
-
-
 namespace CleverDb
 {
     public class CleverDbContext
@@ -190,8 +188,6 @@ namespace CleverDb
                 SqlDataAdapter dataAdapter = new SqlDataAdapter();
                 dataAdapter.SelectCommand = command;
                 DataSet ds = new DataSet();
-
-
                 try
                 {
                     connection.Open();
@@ -269,7 +265,7 @@ namespace CleverDb
                 " left join [CleverObjectAttributes] at on ob.Id = at.CleverObjectId " +
                 " where ob.Id in ( " +
                 " select distinct (obj.Id) from [CleverObjects] obj " +
-                " left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId "; 
+                " left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId ";
 
             if (cq.ObjectConditions.ToList().Count > 0)
             {
@@ -321,7 +317,7 @@ namespace CleverDb
                     if (ds.Tables[0].Rows.Count != 0)
                     {
 
-                        foreach(var dataRow in ds.Tables[0].AsEnumerable())
+                        foreach (var dataRow in ds.Tables[0].AsEnumerable())
                         {
                             int objectId = dataRow.Field<int>("Id");
                             string objectName = dataRow.Field<string>("Name");

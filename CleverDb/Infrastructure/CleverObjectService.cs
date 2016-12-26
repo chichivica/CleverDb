@@ -1,14 +1,10 @@
 ﻿using CleverDb.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.Remoting;
+using System.Dynamic;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Helpers;
-using System.Web.Script.Serialization;
 
 namespace CleverDb.Infrastructure
 {
@@ -55,12 +51,55 @@ namespace CleverDb.Infrastructure
             return result;
         }
 
+        public static dynamic GetDynamicFromCleverObject(CleverObject obj)
+        {
+            StringBuilder result = new StringBuilder();
+            dynamic expandObject = new ExpandoObject();
+            result.AppendLine("{ id : " + obj.Id + ",");
+            result.AppendLine(" name : \"" + obj.Name + "\",");
+            result.AppendLine(" parentId : " + obj.ParentId+ ",");
+            result.AppendLine(" attributes : {");
+            int counter = 1;
+            foreach (var attribute in obj.Attributes)
+            {
+                string value = "";
+                switch (attribute.EnumType)
+                {
+                    case CleverObjectAttributeTypes.String:
+                        result.AppendLine(String.Format(" \"{0}\" : \"{1}\"", attribute.Name, attribute.StringValue));
+                        break;
+                    case CleverObjectAttributeTypes.DateTime:
+                        result.AppendLine(String.Format(" \"{0}\" : \"{1}\"", attribute.Name, attribute.DateTimeValue.ToString()));
+                        break;
+                    case CleverObjectAttributeTypes.Double:
+                        result.AppendLine(String.Format(" \"{0}\" : {1}", attribute.Name, attribute.DoubleValue.ToString().Replace(',','.')));
+                        break;
+                }
+                if (obj.Attributes.Count > counter)
+                {
+                    result.Append(",");
+                }
+                counter++;
+            }
+            result.Append("}}");
+            var q = JsonConvert.DeserializeObject<dynamic>(result.ToString());
+            return q;
+        }
+        public static IEnumerable<dynamic> GetDynamicFromCleverObject(IEnumerable<CleverObject> listOfObjects)
+        {
+            List<dynamic> result = new List<dynamic>();
+            foreach (var item in listOfObjects)
+            {
+                result.Add(GetDynamicFromCleverObject(item));
+            }
+            return result;
+        }
         public static CleverObject GetCleverObjectFromJson(string json)
         {
             dynamic decodedObject = Json.Decode(json);
             return GetCleverObjectFromDynamic(decodedObject);
         }
-
+        
         public static string CreateJsonFromDynamicObj (dynamic obj)
         {
             return Json.Encode(obj);
