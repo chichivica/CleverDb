@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CleverDb.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,6 +29,16 @@ namespace CleverDb.Infrastructure
                 }
             }
             return enumerationValue.ToString();
+        }
+
+        public static int Count (this IEnumerable<CleverObject> enumerable)
+        {
+            int counter = 0;
+            foreach (var item in enumerable) 
+            {
+                counter++;
+            }
+            return counter;
         }
     }
 }

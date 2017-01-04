@@ -7,6 +7,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web.Http;
 
 namespace CleverApi.Controllers
@@ -15,7 +16,7 @@ namespace CleverApi.Controllers
     {
         [HttpPost]
         [Route("api/cleverdb/insert")]
-        public object Insert(dynamic json)
+        public HttpResponseMessage Insert(dynamic json)
         {
             if (json == null)
             {
@@ -24,17 +25,24 @@ namespace CleverApi.Controllers
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
             var inserted = db.Insert(json);
-            return Json(CleverObjectService.GetDynamicFromCleverObject(inserted));
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent(inserted.ToString(), Encoding.UTF8, "application/json")
+            };
         }
 
         [HttpGet]
         [Route("api/cleverdb/get/{id}")]
-        public object Get(int id)
+        public HttpResponseMessage Get(int id)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
             var result = db.FindById(id);
-            return Json(CleverObjectService.GetDynamicFromCleverObject(result));
+
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent(result.ToString(), Encoding.UTF8, "application/json")
+            };
         }
 
         [HttpGet]
@@ -48,7 +56,7 @@ namespace CleverApi.Controllers
 
         [HttpPost]
         [Route("api/cleverdb/find")]
-        public object FindObject(dynamic json)
+        public HttpResponseMessage FindObject(dynamic json)
         {
             if (json == null)
             {
@@ -61,7 +69,10 @@ namespace CleverApi.Controllers
             try
             {
                 var result = db.Find(cq);
-                return Json(CleverObjectService.GetDynamicFromCleverObject(result));
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(CleverObjectService.GetJsonFromCleverObjectArray(result), Encoding.UTF8, "application/json")
+                };
             }
             catch (Exception exp)
             {
