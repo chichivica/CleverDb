@@ -1,4 +1,5 @@
-﻿using CleverDb.Models;
+﻿using CleverDb.Exceptions;
+using CleverDb.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,8 +11,79 @@ namespace CleverDb.Infrastructure
 {
     public class CleverObjectService
     {
+        public static void CheckDynamicObjectConsistency(dynamic decodedObject)
+        {
+            if (decodedObject.name == null)
+            {
+                throw new InvalidObjectFormatException()
+                {
+                    ExceptionDetails = "Object doesn't have name property and/or it is wrong named"
+                };
+            }
+            if (((string)decodedObject.name).Length > 255)
+            {
+                throw new InvalidObjectFormatException()
+                {
+                    ExceptionDetails = $"Object {decodedObject.name} has name with length greater then 255 simbols"
+                };
+            }
+
+            if (decodedObject.attributes == null)
+            {
+                throw new InvalidObjectFormatException()
+                {
+                    ExceptionDetails = "Object doesn't have attributes"
+                };
+            }
+
+            foreach (var item in decodedObject.attributes)
+            {
+
+                if (item == null)
+                {
+                    throw new InvalidObjectFormatException()
+                    {
+                        ExceptionDetails = "Empty attribute array"
+                    };
+                }
+                if (item.Name == null)
+                {
+                    throw new InvalidObjectFormatException()
+                    {
+                        ExceptionDetails = $"in Object {decodedObject.name} any attribute name is not presented"
+                    };
+                }
+                if (string.IsNullOrEmpty(item.Name.ToString()) || string.IsNullOrWhiteSpace(item.Name.ToString()))
+                {
+                    throw new InvalidObjectFormatException()
+                    {
+                        ExceptionDetails = $"Attribute name cannot be empty neither white space"
+                    };
+                }
+
+                if (((string)item.Name).Length > 255)
+                {
+                    throw new InvalidObjectFormatException()
+                    {
+                        ExceptionDetails = $"Object {decodedObject.name} has Attribute {item.Name} name length higher then 255 characters"
+                    };
+                }
+                if (item.Value.GetType() == typeof(string) || item.Value.Type.ToString() == "String")
+                {
+                    if (((string)item.Value).Length > 3000)
+                    {
+                        throw new InvalidObjectFormatException()
+                        {
+                            ExceptionDetails = $"Object {decodedObject.name} has Attribute {item.Name} has value with length greater then 3000 characters"
+                        };
+                    }
+                }
+            }
+        }
+
         public static CleverObject GetCleverObjectFromDynamic(dynamic decodedObject)
         {
+            CheckDynamicObjectConsistency(decodedObject);
 
             CleverObject result = new CleverObject();
             result.Name = decodedObject.name;
@@ -44,6 +116,16 @@ namespace CleverDb.Infrastructure
                     {
                         Name = attribute.Name,
                         DateTimeValue = attribute.Value
+                    });
+                }
+                else
+                {
+                    Double parseResult;
+                    Double.TryParse(attribute.Value.ToString(), out parseResult);
+                    result.Attributes.Add(new CleverObjectAttribute(CleverObjectAttributeTypes.Double)
+                    {
+                        Name = attribute.Name,
+                        DoubleValue = parseResult
                     });
                 }
 

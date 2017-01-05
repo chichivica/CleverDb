@@ -26,7 +26,7 @@ namespace CleverDb
         public CleverObject Insert(CleverObject co)
         {
             string queryString = @"
-                insert into [CleverDb].[dbo].[CleverObjects](Name, ParentId)
+                insert into [CleverObjects] (Name, ParentId)
                 output INSERTED.ID
                 values (@objectName, @parentId)";
 
@@ -53,7 +53,7 @@ namespace CleverDb
             co.Id = insertedId;
             InsertAttributes(co);
 
-            queryString = @" buildPathForObject @objId";
+            queryString = @" CreatePathForObject @objId";
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 SqlCommand command = new SqlCommand(queryString, connection)
@@ -119,7 +119,7 @@ namespace CleverDb
 
         public dynamic GetSubTreeForTheNode(int id)
         {
-            string queryString = "exec [dbo].[getSubTreeForTheNode] @objectId";
+            string queryString = "exec [GetSubTreeForTheNode] @objectId";
             dynamic result = new ExpandoObject();
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -239,7 +239,7 @@ namespace CleverDb
                 }
             }
 
-            queryString += " EXECUTE insertCleverObjectAttributes @TableVariable = @DataTable";
+            queryString += " EXECUTE InsertCleverObjectAttributes @TableVariable = @DataTable";
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
@@ -248,12 +248,6 @@ namespace CleverDb
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
             }
-        }
-
-        public IEnumerable<CleverObject> FindById(IEnumerable<int> ids)
-        {
-            //TODO: implement method to search with a list of ids in the joined table
-            return null;
         }
 
         public IEnumerable<CleverObject> Find(CleverQuery cq)

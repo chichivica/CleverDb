@@ -56,6 +56,17 @@ namespace CleverDb.Models
 
             return result;
         }
+
+        public static List<string> StringArrayOfOperators()
+        {
+            return new List<string>()
+            {
+                "$eq",
+                "$lt",
+                "$gt",
+                "$in"
+            };
+        }
         public CleverCondition(string name, string type, dynamic value)
         {
             switch (type)

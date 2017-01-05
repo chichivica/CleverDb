@@ -32,7 +32,6 @@ namespace CleverDb.Models
             result.AppendLine("{");
             foreach (var attribute in Attributes)
             {
-                string value = "";
                 switch (attribute.EnumType)
                 {
                     case CleverObjectAttributeTypes.String:

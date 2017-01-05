@@ -74,7 +74,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CleverDbContext.cs" />
+    <Compile Include="Exceptions\CleverException.cs" />
+    <Compile Include="Exceptions\InvalidObjectFormatException.cs" />
+    <Compile Include="Exceptions\InvalidQueryFormatException.cs" />
     <Compile Include="Infrastructure\CleverObjectService.cs" />
+    <Compile Include="Infrastructure\CleverQueryService.cs" />
     <Compile Include="Infrastructure\DynamicJsonConverter.cs" />
     <Compile Include="Infrastructure\CleverExtensions.cs" />
     <Compile Include="Models\CleverCondition.cs" />
@@ -87,6 +91,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

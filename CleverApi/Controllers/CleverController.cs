@@ -20,15 +20,34 @@ namespace CleverApi.Controllers
         {
             if (json == null)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "provide correct json object"));
+                return Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest,
+                    new
+                    {
+                        Exception = "InvalidObjectFormatException",
+                        Message = "Json object you have provided has invalid format"
+                    });
             }
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            var inserted = db.Insert(json);
-            return new HttpResponseMessage()
+            try
             {
-                Content = new StringContent(inserted.ToString(), Encoding.UTF8, "application/json")
-            };
+                var inserted = db.Insert(json);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(inserted.ToString(), Encoding.UTF8, "application/json")
+                };
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest,
+                    new
+                    {
+                        Exception = exp.GetType().Name.ToString(),
+                        Message = exp.Message
+                    });
+                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, exp.Message));
+            }
+
         }
 
         [HttpGet]
@@ -37,12 +56,24 @@ namespace CleverApi.Controllers
         {
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            var result = db.FindById(id);
 
-            return new HttpResponseMessage()
+            try
             {
-                Content = new StringContent(result.ToString(), Encoding.UTF8, "application/json")
-            };
+                var result = db.FindById(id);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(result.ToString(), Encoding.UTF8, "application/json")
+                };
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse<dynamic>(HttpStatusCode.InternalServerError,
+                  new
+                  {
+                      Exception = exp.GetType().Name.ToString(),
+                      Message = exp.Message
+                  });
+            }
         }
 
         [HttpGet]
@@ -51,7 +82,19 @@ namespace CleverApi.Controllers
         {
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
             CleverDbContext db = new CleverDbContext(connectionString);
-            return Json(db.GetSubTreeForTheNode(id));
+            try
+            {
+                return Json(db.GetSubTreeForTheNode(id));
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse<dynamic>(HttpStatusCode.InternalServerError,
+                new
+                {
+                    Exception = exp.GetType().Name.ToString(),
+                    Message = exp.Message
+                });
+            }
         }
 
         [HttpPost]
@@ -60,14 +103,18 @@ namespace CleverApi.Controllers
         {
             if (json == null)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "provide correct json object"));
+                return Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest,
+                  new
+                  {
+                      Exception = "InvalidObjectFormatException",
+                      Message = "Json object you have provided has invalid format"
+                  });
             }
             string connectionString = ConfigurationManager.ConnectionStrings["defaultConnection"].ConnectionString;
-
             CleverDbContext db = new CleverDbContext(connectionString);
-            CleverQuery cq = new CleverQuery(json);
             try
             {
+                CleverQuery cq = new CleverQuery(json);
                 var result = db.Find(cq);
                 return new HttpResponseMessage()
                 {
@@ -76,7 +123,12 @@ namespace CleverApi.Controllers
             }
             catch (Exception exp)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, exp.ToString()));
+                return Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest,
+                new
+                {
+                    Exception = exp.GetType().Name.ToString(),
+                    Message = exp.Message
+                });
             }
         }
     }

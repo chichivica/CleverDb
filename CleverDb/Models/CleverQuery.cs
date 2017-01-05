@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CleverDb.Infrastructure;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,15 +22,11 @@ namespace CleverDb.Models
             }
         }
 
-
-
         public CleverQuery(dynamic json)
         {
             var convert = JsonConvert.SerializeObject(json);
             dynamic obj = Json.Decode<dynamic>(convert);
-
-            var a = json.First;
-            var b = json.First.First;
+            CleverQueryService.CheckDynamicObjectConsistency(obj);
             foreach (var query in obj)
             {
                 string entityType = new List<string>(query.Keys).First<string>();
@@ -47,10 +44,6 @@ namespace CleverDb.Models
                 {
                     ((List<CleverCondition>)AttributesConditions)
                         .Add(new CleverCondition(fieldName, operationType, value));
-                }
-                else
-                {
-                    throw new Exception("Could not parse query");
                 }
             }
         }
