@@ -31,7 +31,7 @@ namespace CleverDb.Infrastructure
                     string operationType = new List<string>(query[entityType][fieldName].Keys).First();
                     dynamic value = query[entityType][fieldName][operationType];
 
-                    if (entityType != "class" || entityType != "attribute")
+                    if (entityType != "class" && entityType != "attribute")
                     {
                         throw new InvalidQueryFormatException
                         {

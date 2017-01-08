@@ -94,11 +94,25 @@ namespace CleverDb.Infrastructure
 
                 if (attribute.Value.GetType() == typeof(string) || attribute.Value.Type.ToString() == "String")
                 {
-                    result.Attributes.Add(new CleverObjectAttribute(CleverObjectAttributeTypes.String)
+                    DateTime newDate = new DateTime();
+                    bool parseResult = DateTime.TryParse(attribute.Value.ToString(), out newDate);
+                    if (parseResult)
                     {
-                        Name = attribute.Name,
-                        StringValue = attribute.Value
-                    });
+                        result.Attributes.Add(new CleverObjectAttribute(CleverObjectAttributeTypes.DateTime)
+                        {
+                            Name = attribute.Name,
+                            DateTimeValue = newDate
+                        });
+                    }
+                    else
+                    {
+                        result.Attributes.Add(new CleverObjectAttribute(CleverObjectAttributeTypes.String)
+                        {
+                            Name = attribute.Name,
+                            StringValue = attribute.Value
+                        });
+                    }
+
                 }
                 else
                 if (attribute.Value.GetType() == typeof(Decimal) || attribute.Value.GetType() == typeof(Int32) || attribute.Value.Type.ToString() == "Float")

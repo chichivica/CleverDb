@@ -113,7 +113,7 @@ namespace CleverDb
                     connection.Close();
                 }
             }
-
+            if (result == null) return null;
             return PopulateAttributes(result);
         }
 
@@ -257,38 +257,35 @@ namespace CleverDb
             string queryString = "select ob.Id as 'Id', ob.Name, ob.ParentId, at.Id as 'AttributeId', at.Name as 'AttributeName'," +
                 " at.StringValue, at.DateTimeValue, at.DoubleValue, at.Type, at.CleverObjectId from [CleverObjects] ob " +
                 " left join [CleverObjectAttributes] at on ob.Id = at.CleverObjectId " +
-                " where ob.Id in ( " +
-                " select distinct (obj.Id) from [CleverObjects] obj " +
-                " left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId ";
+                " where ob.Id in ( ";
 
             if (cq.ObjectConditions.ToList().Count > 0)
             {
-                queryString += " where ";
                 int counter = 1;
                 foreach (var query in cq.ObjectConditions)
                 {
+                    queryString += " select distinct (obj.Id) from [CleverObjects] obj " +
+                                   " left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId where ";
                     queryString += query.GetSqlCondition("obj");
                     if (counter < cq.ObjectConditions.Count())
-                        queryString += " and ";
+                        queryString += " intersect ";
                     counter++;
                 }
             }
             if (cq.AttributesConditions.ToList().Count > 0)
             {
-                if (cq.ObjectConditions.ToList().Count == 0)
+                if (cq.ObjectConditions.ToList().Count > 0)
                 {
-                    queryString += " where ";
-                }
-                else
-                {
-                    queryString += " and ";
+                    queryString += " intersect ";
                 }
                 int count = 1;
                 foreach (var query in cq.AttributesConditions)
                 {
+                    queryString += " select distinct (obj.Id) from [CleverObjects] obj " +
+                                " left join [CleverObjectAttributes] atr on obj.Id = atr.CleverObjectId where ";
                     queryString += query.GetSqlCondition("atr");
                     if (count < cq.AttributesConditions.Count())
-                        queryString += " and ";
+                        queryString += " intersect ";
                     count++;
                 }
             }
@@ -310,21 +307,12 @@ namespace CleverDb
                     dataAdapter.Fill(ds);
                     if (ds.Tables[0].Rows.Count != 0)
                     {
-
                         foreach (var dataRow in ds.Tables[0].AsEnumerable())
                         {
                             int objectId = dataRow.Field<int>("Id");
                             string objectName = dataRow.Field<string>("Name");
                             int? objectPartentId = dataRow.Field<int?>("ParentId");
-                            var attribute = new CleverObjectAttribute(dataRow.Field<string>("Type"))
-                            {
-                                Id = dataRow.Field<int>("AttributeId"),
-                                Name = dataRow.Field<string>("AttributeName"),
-                                StringValue = dataRow.Field<string>("StringValue"),
-                                DoubleValue = dataRow.Field<double?>("DoubleValue"),
-                                DateTimeValue = dataRow.Field<DateTime?>("DateTimeValue"),
-                                CleverObjectId = dataRow.Field<int>("CleverObjectId")
-                            };
+
 
                             if (stack.Count == 0)
                             {
@@ -346,7 +334,22 @@ namespace CleverDb
                                 });
                                 stackedObject = stack.Peek();
                             }
-                            stackedObject.Attributes.Add(attribute);
+
+                            if (dataRow.Field<string>("Type") != null)
+                            {
+
+                                var attribute = new CleverObjectAttribute(dataRow.Field<string>("Type"))
+                                {
+                                    Id = dataRow.Field<int>("AttributeId"),
+                                    Name = dataRow.Field<string>("AttributeName"),
+                                    StringValue = dataRow.Field<string>("StringValue"),
+                                    DoubleValue = dataRow.Field<double?>("DoubleValue"),
+                                    DateTimeValue = dataRow.Field<DateTime?>("DateTimeValue"),
+                                    CleverObjectId = dataRow.Field<int>("CleverObjectId")
+                                };
+                                stackedObject.Attributes.Add(attribute);
+                            }
+
                         }
                     }
                 }

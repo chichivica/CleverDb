@@ -62,7 +62,7 @@ namespace CleverApi.Controllers
                 var result = db.FindById(id);
                 return new HttpResponseMessage()
                 {
-                    Content = new StringContent(result.ToString(), Encoding.UTF8, "application/json")
+                    Content = new StringContent(result == null ? "{}" : result.ToString(), Encoding.UTF8, "application/json")
                 };
             }
             catch (Exception exp)
